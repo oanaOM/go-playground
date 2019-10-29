@@ -1,6 +1,6 @@
 # My First Golang Weather App
 
-A simple app that shows the weather using accuweather API base on your IP
+A simple app that shows the weather using your IP
 
 ## Usage
     Run in terminal
