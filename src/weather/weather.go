@@ -1,11 +1,12 @@
 package main
 
 /*
-* uses accuWeather API
-
-
-
-import all necessary libraries below
+* Dark Sky API
+* ipgeolocation
+*
+*
+*
+* NoteToSelf: use google mails
 */
 
 import (
@@ -15,72 +16,61 @@ import (
 	"net/http"
 )
 
-func main() {
-	fmt.Println("Starting my application ... ")
-	//get the user IP
-	var getIPs, getSingleIP string
-	//start HTTP request to get IP
-	response, err := http.Get("https://httpbin.org/ip")
+
+func myRequestHTTP(url string) map[string]interface{}{
+	var responseData map[string]interface{}
+	response, err := http.Get(url)
+	
+	fmt.Println("Starting my app ... ")
+	
 	if err != nil {
-		fmt.Printf("Ups! Couldn't get IP. The HTTP request failed with error %s\n:", err)
+		fmt.Printf("Ups! The HTTP request to " + url + " failed with error %s\n:", err)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
 		//initialise an empty interface to umarsh the JSON data
-		var jsonData map[string]interface{}
-		json.Unmarshal([]byte(data), &jsonData)
+		json.Unmarshal([]byte(data), &responseData)
+		fmt.Println("Request succesfully to " , url , " ... ")
+    }
+	//fmt.Println("My HTTP response data: ", responseData)
 
-		getIPs = jsonData["origin"].(string)
-		runes := []rune(getIPs)
-		getSingleIP := string(runes[0:14])
+	return responseData
+}
 
-		fmt.Println("IP: ", getSingleIP)
 
-	}
+func main() {
+	
+	var getSingleIP, longitude, latitude string
+	myGeoLocationKey := "d2dfba9048bf4c7594fc4c17f0b0956c"
+	myDarkSkyKey := "cb957c717f54f7a29bfb14de577110cc"
+	
 
-	//unique key to access accuWeather
-	myAccessKey := "jGLWMiB6XGtJ0hJZMCSzBGsYu8T0GJx9"
-	//initialise a keylocation var to construct the request for 1 day forecast
-	var keyLocation string
+	//start request to get IP
+	getIPs := myRequestHTTP("https://httpbin.org/ip")
+	//TODO: change to get everything before first , found
+	runes :=[]rune(getIPs["origin"].(string))
+	getSingleIP = string(runes[0:13])
+	//fmt.Println("IP: ", getSingleIP)
 
-	//get location key
-	// http://dataservice.accuweather.com/locations/v1/cities/ipaddress?apikey=jGLWMiB6XGtJ0hJZMCSzBGsYu8T0GJx9&q=86.147.198.233
-	response, err = http.Get("http://dataservice.accuweather.com/locations/v1/cities/ipaddress?apikey=" + myAccessKey + "&q=" + getSingleIP)
 
-	if err != nil {
-		fmt.Printf("Ups! Couldn't get the location key. The HTTP request failed with error %s\n: ", err)
-	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		fmt.Println("\n", string(data))
+	//start request to get lat and long
+	getGeoLocation := myRequestHTTP("https://api.ipgeolocation.io/ipgeo?apiKey=" + myGeoLocationKey + "&ip=" + getSingleIP)
+	longitude = fmt.Sprint(getGeoLocation["longitude"])
+	latitude = fmt.Sprint(getGeoLocation["latitude"])
+	//fmt.Println("Your latitude: ", latitude, " and longitude ", longitude, " city", fmt.Sprint(getGeoLocation["city"]))
+	
 
-		//unmarch the JSON using an empty interface
-		var jsonData map[string]interface{}
-		//unmarch/decode
-		json.Unmarshal([]byte(data), &jsonData)
+	//start request to get lat and long
+	getForecast := myRequestHTTP("https://api.darksky.net/forecast/" + myDarkSkyKey + "/" + longitude + "," + latitude)
+	weatherToday := getForecast["hourly"].(map[string]interface{})
+	// weatherTodayData := weatherToday["data"].(map[string]interface{})
+	//fmt.Println("weatherToday: ", weatherToday)
 
-		keyLocation := jsonData["Key"]
-
-		fmt.Println(">>>> LocalizedName: ", jsonData["LocalizedName"], " and the key: ", keyLocation)
-	}
-
-	/* 1 day forecast request*/
-	// http://dataservice.accuweather.com/forecasts/v1/daily/1day/328328?apikey=jGLWMiB6XGtJ0hJZMCSzBGsYu8T0GJx9
-
-	response, err = http.Get("http://dataservice.accuweather.com/forecasts/v1/daily/1day/" + keyLocation + "?apikey=" + myAccessKey)
-
-	if err != nil {
-		fmt.Printf("Ups! Couldn't get the 1 day forecast. The HTTP request failed with error %s\n: ", err)
-	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		fmt.Println("\n", string(data))
-
-		//unmarch the JSON using an empty interface
-		var jsonData map[string]interface{}
-		//unmarch/decode
-		json.Unmarshal([]byte(data), &jsonData)
-
-		//headline := jsonData["Headline"].(map[string]interface{})
-
-		fmt.Println(">>>> headline: ", jsonData["Headline"])
-	}
+	//TODO: convert temperature to Celsius
+	fmt.Println("Having a nice time in", fmt.Sprint(getGeoLocation["city"], " ?"), 
+				" \n It looks like the weather's ", weatherToday["summary"])	
+				
+	// fmt.Println("Having a nice time in", fmt.Sprint(getGeoLocation["city"], " ?"), 
+	// 			" \n It looks like the weather's ", weatherToday["summary"],
+	// 			"\n with a temperature of ", weatherToday["data"], "Fahrenheit" )
 
 }
