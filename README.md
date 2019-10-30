@@ -20,4 +20,7 @@ This app will retrieve the user's IP and feed it to a [P Geolocation API.](https
 Currently in order for this app to work, you need to have [Go](https://golang.org) installed on your machine. Please follow the instructions on their site on how to do this.
 Once you have Go up and running, open a terminal,  clone this repo on your machine, navigate to  *bin/weather* folder and type 
 
-    go run weather
+    go run weather.go
+
+
+ 
