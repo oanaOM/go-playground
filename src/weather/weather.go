@@ -41,28 +41,25 @@ func myRequestHTTP(url string) map[string]interface{} {
 
 func main() {
 
-	var getSingleIP, longitude, latitude string
+	var longitude, latitude string
 	myGeoLocationKey := "d2dfba9048bf4c7594fc4c17f0b0956c"
 	myDarkSkyKey := "cb957c717f54f7a29bfb14de577110cc"
 
-	//start request to get IP
-	getIPs := myRequestHTTP("https://httpbin.org/ip")
-	//TODO: change to get everything before first , found
-	runes := []rune(getIPs["origin"].(string))
-	getSingleIP = string(runes[0:13])
-
 	//start request to get lat and long
-	getGeoLocation := myRequestHTTP("https://api.ipgeolocation.io/ipgeo?apiKey=" + myGeoLocationKey + "&ip=" + getSingleIP)
+	getGeoLocation := myRequestHTTP("https://api.ipgeolocation.io/ipgeo?apiKey=" + myGeoLocationKey)
 	longitude = fmt.Sprint(getGeoLocation["longitude"])
 	latitude = fmt.Sprint(getGeoLocation["latitude"])
 
 	//start request to get lat and long
-	getForecast := myRequestHTTP("https://api.darksky.net/forecast/" + myDarkSkyKey + "/" + longitude + "," + latitude)
+	getForecast := myRequestHTTP("https://api.darksky.net/forecast/" + myDarkSkyKey + "/" + latitude + "," + longitude)
 	weatherToday := getForecast["currently"].(map[string]interface{})
+	tempF := weatherToday["temperature"].(float64)
+	tempC := (tempF - float64(32)) * float64(5) / float64(9)
 
 	//TODO: convert temperature to Celsius
-	fmt.Println("Having a nice time in", fmt.Sprint(getGeoLocation["city"], " ?"),
-		"\n It looks like the weather's --- ", weatherToday["summary"],
-		"\n with a temperature of --- ", weatherToday["temperature"], "Fahrenheit")
+	fmt.Println("Having a nice time in --- ", fmt.Sprint(getGeoLocation["city"], " ?"),
+		"\nToday's weather is    --- ", weatherToday["summary"])
+	fmt.Printf("with a temperature of ---  %.0f", tempC)
+	fmt.Println(" C")
 
 }
