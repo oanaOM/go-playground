@@ -13,21 +13,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"path"
 	"text/template"
 )
 
+/*Weather ... */
+type Weather struct {
+	City        string
+	Summary     string
+	Temperatura float64
+}
+
 func main() {
 
-	// type Weather struct {
-	// 	City        string
-	// 	Summary     string
-	// 	Temperatura float64
-	// }
-
 	http.HandleFunc("/", ShowWeather)
-	http.ListenAndServe(":8087", nil)
+	http.ListenAndServe(":8080", nil)
 
 }
 
@@ -54,7 +56,7 @@ func myRequestHTTP(url string) map[string]interface{} {
 	return responseData
 }
 
-func getWeather() interface{} {
+func getWeather() Weather {
 	var longitude, latitude string
 	myGeoLocationKey := "d2dfba9048bf4c7594fc4c17f0b0956c"
 	myDarkSkyKey := "cb957c717f54f7a29bfb14de577110cc"
@@ -66,20 +68,25 @@ func getWeather() interface{} {
 
 	//start request to get lat and long
 	getForecast := myRequestHTTP("https://api.darksky.net/forecast/" + myDarkSkyKey + "/" + latitude + "," + longitude)
-	weatherToday := getForecast["currently"]
-	//tempF := weatherToday["temperature"].(float64)
+	weatherToday := getForecast["currently"].(map[string]interface{})
+	tempF := weatherToday["temperature"].(float64)
+	tempC := (tempF - float64(32)) * float64(5) / float64(9)
+	forecastData := Weather{fmt.Sprint(getGeoLocation["city"]), fmt.Sprint(weatherToday["summary"]), math.Round(tempC)}
 
-	// tempC := (tempF - float64(32)) * float64(5) / float64(9)
 	// fmt.Println("Having a nice time in --- ", fmt.Sprint(getGeoLocation["city"], " ?"),
 	// 	"\nToday's weather is    --- ", weatherToday["summary"])
 	// fmt.Printf("with a temperature of ---  %.0f", tempC)
 	// fmt.Println(" C")
-	return weatherToday
+	return forecastData
 }
 
+/*ShowWeather ... */
 func ShowWeather(w http.ResponseWriter, r *http.Request) {
 
-	js, err := json.Marshal(getWeather)
+	myWeather := getWeather()
+	//fmt.Println("myWeather>>> ", myWeather)
+
+	js, err := json.Marshal(myWeather)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -92,7 +99,7 @@ func ShowWeather(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, js); err != nil {
+	if err := tmpl.Execute(w, myWeather); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
 	}

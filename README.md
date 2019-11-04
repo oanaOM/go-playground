@@ -7,10 +7,10 @@ This app will retrieve the user's IP and feed it to a [P Geolocation API.](https
 ## Features
 
  - [x] Retrieve user's location
- - [ ] Retrieve local time temperature 
+ - [x] Retrieve local time temperature 
  - [x] Retrieve a short weather summary
  - [ ] Retrieve pollution level and maybe a small warning
- - [ ] Show everything in UI (probably html page)
+ - [x] Show everything in UI (probably html page)
  - [ ] Change icon based on weather
  - [ ] Look into GITHub apps
 
