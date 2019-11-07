@@ -24,6 +24,7 @@ type Weather struct {
 	City        string
 	Summary     string
 	Temperatura float64
+	Icon 		string
 }
 
 func main() {
@@ -68,13 +69,15 @@ func getWeather() Weather {
 
 	//start request to get lat and long
 	getForecast := myRequestHTTP("https://api.darksky.net/forecast/" + myDarkSkyKey + "/" + latitude + "," + longitude)
-	weatherToday := getForecast["currently"].(map[string]interface{})
-	tempF := weatherToday["temperature"].(float64)
+	weatherNow := getForecast["currently"].(map[string]interface{})
+	weatherToday := getForecast["daily"].(map[string]interface{})
+	tempF := weatherNow["temperature"].(float64)
 	tempC := (tempF - float64(32)) * float64(5) / float64(9)
-	forecastData := Weather{fmt.Sprint(getGeoLocation["city"]), fmt.Sprint(weatherToday["summary"]), math.Round(tempC)}
+	forecastData := Weather{fmt.Sprint(getGeoLocation["city"]), fmt.Sprint(weatherToday["summary"]), math.Round(tempC), fmt.Sprint(weatherNow["icon"])}
+	
 
 	// fmt.Println("Having a nice time in --- ", fmt.Sprint(getGeoLocation["city"], " ?"),
-	// 	"\nToday's weather is    --- ", weatherToday["summary"])
+	// 	"\nToday's weather is    --- ", weatherNow["summary"])
 	// fmt.Printf("with a temperature of ---  %.0f", tempC)
 	// fmt.Println(" C")
 	return forecastData
@@ -84,14 +87,7 @@ func getWeather() Weather {
 func ShowWeather(w http.ResponseWriter, r *http.Request) {
 
 	myWeather := getWeather()
-	//fmt.Println("myWeather>>> ", myWeather)
-
-	js, err := json.Marshal(myWeather)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	
 	fp := path.Join("templates", "index.html")
 	tmpl, err := template.ParseFiles(fp)
 	if err != nil {
@@ -105,6 +101,5 @@ func ShowWeather(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
 
 }
