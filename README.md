@@ -1,5 +1,5 @@
 # Weather or Not!
-A simple weather app that shows 1 day forecast at your current location.
+A simple weather app that shows the weather at your current location.
 
 ## Overview
 This app will retrieve the user's IP and feed it to a [P Geolocation API.](https://ipgeolocation.io/) request to retrieve the latitude and longitude coordinates used by [Dark Sky API ](https://darksky.net/dev)  to show the local weather.
@@ -23,6 +23,6 @@ For this app to work, you need to have [Go](https://golang.org) installed on you
 Once you have Go up and running, open a terminal, clone this repo in a new folder, navigate to  *src/webApp* folder and type 
 
     go run main.go
-
+Open your favorite browser and navigate to your http://127.0.0.1:8080/
 
  
